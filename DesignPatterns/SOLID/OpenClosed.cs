@@ -23,6 +23,14 @@ public class OpenClosed
         {
             Console.WriteLine($"{product.Name} | {product.Color} | {product.Size}");
         }
+
+        var specs = new AndSpecification<Product>(new ColorSpec(Color.Blue), new SizeSpec(Size.Huge));
+        Console.WriteLine("Huge blue items");
+        foreach (var product in betterFilter.Filter(products,
+            specs))
+        {
+            Console.WriteLine($"{product.Name} | {product.Color} | {product.Size}");
+        }
     }
 
     public class BetterFilter : IFilter<Product>
@@ -31,23 +39,34 @@ public class OpenClosed
         {
             foreach (var item in items)
             {
-                if(spec.IsSatisfied(item))
+                if (spec.IsSatisfied(item))
                     yield return item;
             }
         }
     }
 
-    public class ColorSpec : ISpecification<Product>
+    public class ColorSpec(Color color) : ISpecification<Product>
     {
-        private Color color;
-        public ColorSpec(Color color)
-        {
-            this.color = color;
-        }
-
         public bool IsSatisfied(Product t)
         {
             return t.Color == color;
+        }
+    }
+
+    public class SizeSpec(Size size) : ISpecification<Product>
+    {
+        public bool IsSatisfied(Product t)
+        {
+            return t.Size == size;
+        }
+    }
+
+    public class AndSpecification<T>(ISpecification<T> first, 
+        ISpecification<T> second) : ISpecification<T>
+    {
+        public bool IsSatisfied(T t)
+        {
+            return first.IsSatisfied(t) && second.IsSatisfied(t);
         }
     }
 
@@ -87,8 +106,6 @@ public class OpenClosed
 
     #endregion
 
-
-
     public enum Color
     {
         Red,
@@ -103,17 +120,10 @@ public class OpenClosed
         Large,
         Huge
     }
-    public class Product
+    public class Product(string name, OpenClosed.Color color, OpenClosed.Size size)
     {
-        public string Name { get; set; }
-        public Color Color { get; set; }
-        public Size Size { get; set; }
-
-        public Product(string name, Color color, Size size)
-        {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Color = color;
-            Size = size;
-        }
+        public string Name { get; set; } = name ?? throw new ArgumentNullException(nameof(name));
+        public Color Color { get; set; } = color;
+        public Size Size { get; set; } = size;
     }
 }
