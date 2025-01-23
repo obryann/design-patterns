@@ -1,0 +1,2 @@
+1: I studied
+2: George died today
